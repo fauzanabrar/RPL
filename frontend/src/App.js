@@ -84,12 +84,12 @@ export default function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       const getData = async () => {
-        // const result  = await axios.get("http://localhost:5000/data");
-        // const data    = result.data[0];
+        const result  = await axios.get("http://localhost:5000/data");
+        const data    = result.data[0];
 
-        // const suhu    = data.temp.toFixed(2);
+        const suhu    = data.temp.toFixed(2);
         
-        const suhu = getsuhu(26);  // random suhu 
+        // const suhu = getsuhu(26);  // random suhu 
 
         setTemp(suhu);
 
