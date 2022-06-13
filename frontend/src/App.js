@@ -46,10 +46,11 @@ export default function App() {
       arrTemp = []
   }
 
-  const postDataToDatabase = (suhu) => {
+  const postDataToDatabase = (suhu, date) => {
+    
     var body = qs.stringify({
       newTemp : suhu.toString(),
-      newDate : new Date().toLocaleString()
+      newDate : date
     });
 
     var config = {
@@ -72,10 +73,10 @@ export default function App() {
     axios
       .get('https://boilerplate-mongomongoose2.fauzanabrar.repl.co/temp?max=30')
       .then( (response) => {
-          // handle success
-          arrTemp = response.data.reverse()
-          setLoadingChart(false)
-          // console.log(response.data.map(item => item.temp));
+        // handle success
+        arrTemp = response.data.reverse()
+        setLoadingChart(false)
+        // console.log(response.data.map(item => item.temp));
       })
   }
 
@@ -83,12 +84,12 @@ export default function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       const getData = async () => {
-        const result  = await axios.get("http://localhost:5000/data");
-        const data    = result.data[0];
+        // const result  = await axios.get("http://localhost:5000/data");
+        // const data    = result.data[0];
 
-        const suhu    = data.temp.toFixed(2);
+        // const suhu    = data.temp.toFixed(2);
         
-        // const suhu = getsuhu(26);  // random suhu 
+        const suhu = getsuhu(26);  // random suhu 
 
         setTemp(suhu);
 
@@ -98,8 +99,14 @@ export default function App() {
           setSafe("Suhu Optimal")
         }
         
-        postDataToDatabase(suhu)
-        getDataFromDatabase()
+        var newDate = new Date().toLocaleString()
+        postDataToDatabase(suhu, newDate)
+        await getDataFromDatabase()
+        arrTemp.push({
+          temp: suhu,
+          date: newDate
+        })
+        
 
         setDatasets({
           labels  : (arrTemp || []).map((item) => new Date(item.date).getSeconds()),
