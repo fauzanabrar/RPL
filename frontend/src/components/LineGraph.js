@@ -22,9 +22,15 @@ ChartJS.register(
 );
 
 export const options = {
-    responsive          : true,
-    maintainAspectRatio : false,
-    plugins             : { legend : { position : 'top'} },
+  responsive          : true,
+  maintainAspectRatio : false,
+  plugins             : { legend: { position: 'top' } },
+  scales              : {
+                          y: {
+                            min: 20,
+                            max: 45,
+                          }
+                        }
 };
 
 

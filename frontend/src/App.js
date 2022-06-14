@@ -11,75 +11,74 @@ export default function App() {
   const [temp, setTemp] = useState(0)
   const [safe, setSafe] = useState("Suhu Tidak Optimal")
 
-  const [datasets, setDatasets]         = useState([])
+  const [datasets, setDatasets] = useState([])
   const [loadingChart, setLoadingChart] = useState(true)
 
-  let arrTemp     = []
+  let arrTemp = []
   let dataKosong = {
-    labels  : arrTemp,
+    labels: arrTemp,
     datasets: [
       {
-        label           : "Suhu",
-        data            : arrTemp,
-        borderColor     : 'rgb(255, 99, 132)',
-        backgroundColor : 'rgba(255, 99, 132, 0.5)',
+        label: "Suhu",
+        data: arrTemp,
+        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
       }
     ]
   }
 
   const deleteData = () => {
-      var config = {
-          method  : 'delete',
-          url     : 'https://boilerplate-mongomongoose2.fauzanabrar.repl.co/delete',
-          headers : {'Content-Type': 'application/x-www-form-urlencoded'},
-      };
-
-      axios(config)
-          .then(function (response) {
-              // console.log(JSON.stringify(response.data));
-              console.log("data berhasil dihapus")
-          })
-          .catch(function (error) {
-              console.log(error);
-          });
-    
-      arrTemp = []
-  }
-
-  const postDataToDatabase = (suhu, date) => {
-    
-    var body = qs.stringify({
-      newTemp : suhu.toString(),
-      newDate : date
-    });
-
     var config = {
-        method  : 'post',
-        url     : 'https://boilerplate-mongomongoose2.fauzanabrar.repl.co/temp',
-        headers : { 'Content-Type': 'application/x-www-form-urlencoded' },
-        data    : body
+      method: 'delete',
+      url: 'http://localhost:5000/data',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     };
 
     axios(config)
       .then(function (response) {
-          // console.log(JSON.stringify(response.data));
+        // console.log(JSON.stringify(response.data));
+        console.log("data berhasil dihapus")
       })
       .catch(function (error) {
-          console.log(error);
+        console.log(error);
+      });
+
+    arrTemp = []
+  }
+
+  const postDataToDatabase = (suhu, date) => {
+
+    var body = qs.stringify({
+      temp: suhu.toString(),
+    });
+
+    var config = {
+      method: 'post',
+      url: 'http://localhost:5000/data',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      data: body
+    };
+
+    axios(config)
+      .then(function (response) {
+        // console.log(JSON.stringify(response.data));
+      })
+      .catch(function (error) {
+        console.log(error);
       });
   }
 
   const getDataFromDatabase = () => {
     axios
-      .get('https://boilerplate-mongomongoose2.fauzanabrar.repl.co/temp?max=30')
-      .then( (response) => {
+      .get('http://localhost:5000/data?limit=30')
+      .then((response) => {
         // handle success
+        console.log(response)
         arrTemp = response.data.reverse()
         setLoadingChart(false)
         // console.log(response.data.map(item => item.temp));
       })
   }
-
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -88,7 +87,7 @@ export default function App() {
         const data    = result.data[0];
 
         const suhu    = data.temp.toFixed(2);
-        
+
         // const suhu = getsuhu(26);  // random suhu 
 
         setTemp(suhu);
@@ -98,37 +97,32 @@ export default function App() {
         } else {
           setSafe("Suhu Optimal")
         }
-        
+
         var newDate = new Date().toLocaleString()
         postDataToDatabase(suhu, newDate)
         await getDataFromDatabase()
-        arrTemp.push({
-          temp: suhu,
-          date: newDate
-        })
-        
 
         setDatasets({
-          labels  : (arrTemp || []).map((item) => new Date(item.date).getSeconds()),
+          labels: (arrTemp || []).map((item) => new Date(item.createdAt).getSeconds()),
           datasets: [
             {
-              label           : "Suhu",
-              data            : arrTemp.map((item) => item.temp),
-              borderColor     : 'rgb(255, 99, 132)',
-              backgroundColor : 'rgba(255, 99, 132, 0.5)',
+              label: "Suhu",
+              data: arrTemp.map((item) => item.temp),
+              borderColor: 'rgb(255, 99, 132)',
+              backgroundColor: 'rgba(255, 99, 132, 0.5)',
             }
           ]
         })
-        
+
       }
       getData();
-    }, 3000);
+    }, 2000);
 
 
     return () => {
       clearInterval(interval);
     };
-  }, [] );
+  }, []);
 
   return (
     <>
@@ -141,13 +135,13 @@ export default function App() {
           <div className="flex flex-col md:flex-row justify-around mt-5 justify-center items-center">
 
             <div className="border-sky-200 border-8 rounded-2xl  ">
-              {(loadingChart) ? <LineGraph chartData={dataKosong}/> : <LineGraph chartData={datasets}/>}
+              {(loadingChart) ? <LineGraph chartData={dataKosong} /> : <LineGraph chartData={datasets} />}
             </div>
 
             <div className="flex flex-col items-center justify-center w-80 h-80 mx-4 mt-5 md:mt-0 rounded-2xl bg-sky-200 drop-shadow-lg">
               <h2 className="font-bold mb-5">Nilai Suhu Dalam Air</h2>
               <div className="flex items-center justify-center">
-                <Logo className="w-20"/>
+                <Logo className="w-20" />
                 <p className="font-semibold text-4xl">{temp} °C</p>
               </div>
               {(temp > 27 || temp < 24) ? <p className="text-xl text-red-500 mt-5">{safe}</p> : <p className="text-xl text-green-500 mt-5">{safe}</p>}
